@@ -1,0 +1,337 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>2026 NEAU Football League</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .page {
+            background: white;
+            width: 400px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px #aaa;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .option {
+            background: #eee;
+            margin: 12px 0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .success {
+            font-size: 20px;
+            color: green;
+            margin: 25px 0;
+        }
+
+        .warning {
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .result {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .bar {
+            background: #ddd;
+            height: 20px;
+            border-radius: 10px;
+            margin: 5px 0 15px;
+            overflow: hidden;
+        }
+
+        .fill {
+            background: #007bff;
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        #page2,
+        #page3 {
+            display: none;
+        }
+
+        .total {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+
+<!-- PAGE 1: VOTING -->
+
+<div class="page" id="page1">
+
+    <h1>NEAU 2026 Football League</h1>
+
+    <h3>Choose your TEAM</h3>
+
+    <div class="option">
+        <input type="radio" name="vote" value="Eagle">
+        Eagle
+    </div>
+
+    <div class="option">
+        <input type="radio" name="vote" value="Leo">
+        Leo
+    </div>
+
+    <div class="option">
+        <input type="radio" name="vote" value="Raider">
+        Raider
+    </div>
+
+    <div class="option">
+        <input type="radio" name="vote" value="Phoenix">
+        Phoenix
+    </div>
+
+    <button id="voteButton" onclick="vote()">
+        Vote
+    </button>
+
+    <br>
+
+    <button onclick="showResults()">
+        View Results
+    </button>
+
+    <div id="alreadyVoted"></div>
+
+</div>
+
+
+<!-- PAGE 2: CONFIRMATION -->
+
+<div class="page" id="page2">
+
+    <h1>✅ Vote Submitted</h1>
+
+    <div class="success" id="message"></div>
+
+    <p>
+        Are you sure that team is going to win!<br>
+        Anyways, you took the risk. Let's see which team wins.
+    </p>
+
+    <button onclick="showResults()">
+        View Results
+    </button>
+
+</div>
+
+
+<!-- PAGE 3: RESULTS -->
+
+<div class="page" id="page3">
+
+    <h1>📊 Voting Results</h1>
+
+    <div id="results"></div>
+
+</div>
+
+
+<script>
+
+
+// Load saved votes
+let votes = JSON.parse(localStorage.getItem("votes")) || {
+    Eagle: 0,
+    Leo: 0,
+    Raider: 0,
+    Phoenix: 0
+};
+
+
+// Check if this browser has already voted
+let hasVoted = localStorage.getItem("hasVoted");
+
+
+// If already voted, disable voting
+if (hasVoted === "true") {
+
+    document.getElementById("voteButton").disabled = true;
+
+    document.getElementById("alreadyVoted").innerHTML =
+        '<p class="warning">You have already voted!</p>';
+
+}
+
+
+// Voting function
+function vote() {
+
+    // Check if already voted
+    if (localStorage.getItem("hasVoted") === "true") {
+
+        alert("You have already voted!");
+
+        showResults();
+
+        return;
+    }
+
+
+    // Get selected team
+    let selected = document.querySelector(
+        'input[name="vote"]:checked'
+    );
+
+
+    // If nothing selected
+    if (!selected) {
+
+        alert("Please select a team!");
+
+        return;
+    }
+
+
+    let option = selected.value;
+
+
+    // Add the vote
+    votes[option]++;
+
+
+    // Save votes
+    localStorage.setItem(
+        "votes",
+        JSON.stringify(votes)
+    );
+
+
+    // Mark this browser as having voted
+    localStorage.setItem(
+        "hasVoted",
+        "true"
+    );
+
+
+    // Show confirmation page
+    document.getElementById("page1").style.display = "none";
+
+    document.getElementById("page2").style.display = "block";
+
+
+    // Show selected team
+    document.getElementById("message").innerHTML =
+        "You have voted for <b>" + option + "</b>";
+}
+
+
+
+// Show results
+function showResults() {
+
+    document.getElementById("page1").style.display = "none";
+
+    document.getElementById("page2").style.display = "none";
+
+    document.getElementById("page3").style.display = "block";
+
+
+    // Calculate total votes
+    let total =
+        votes.Eagle +
+        votes.Leo +
+        votes.Raider +
+        votes.Phoenix;
+
+
+    let html = "";
+
+
+    // Calculate percentage
+    for (let option in votes) {
+
+        let percentage = 0;
+
+
+        if (total > 0) {
+
+            percentage =
+                (votes[option] / total) * 100;
+
+        }
+
+
+        html += `
+            <div class="result">
+
+                <b>${option}</b><br>
+
+                ${votes[option]} votes
+                (${percentage.toFixed(1)}%)
+
+                <div class="bar">
+
+                    <div class="fill"
+                         style="width:${percentage}%">
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    html += `
+        <div class="total">
+            <b>Total votes: ${total}</b>
+        </div>
+    `;
+
+
+    document.getElementById("results").innerHTML = html;
+}
+
+
+</script>
+
+</body>
+</html>
+```
